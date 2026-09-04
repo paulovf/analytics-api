@@ -1,0 +1,52 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR Title (Semantic Pull Request)
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            feature
+            fix
+            hotfix
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject must not start with a capital letter.
+
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Branch Name Syntax
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          REGEX="^(feat|feature|fix|hotfix|qa)/[a-zA-Z0-9_-]+$"
+          if [[ ! $BRANCH_NAME =~ $REGEX ]]; then
+            echo "Error: Branch name '$BRANCH_NAME' is invalid."
+            echo "Must match convention: (feat|feature|fix|hotfix|qa)/description"
+            exit 1
+          fi
+          echo "Branch name is valid."
+
+  check-version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Version Bump Intent
+        run: |
+          # Checks if the PR title is compliant to trigger a semantic versioning bump
+          TITLE="${{ github.event.pull_request.title }}"
+          if [[ "$TITLE" == feat:* || "$TITLE" == feature:* || "$TITLE" == fix:* || "$TITLE" == hotfix:* ]]; then
+            echo "PR title is compliant for automated Semantic Versioning bump."
+          else
+            echo "Error: PR title must start with feat:, feature:, fix:, or hotfix: to guarantee version bump."
+            exit 1
+          fi

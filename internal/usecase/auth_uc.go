@@ -23,7 +23,7 @@ func NewAuthUseCase(repo domain.ApiClientRepository, jwtSecret string) *AuthUseC
 func (uc *AuthUseCase) Authenticate(ctx context.Context, clientID, clientSecret string) (string, error) {
 	client, err := uc.repo.FindByClientID(ctx, clientID)
 	if err != nil {
-		return "", errors.New("Invalid credentials") 
+		return "", errors.New("Invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(client.ClientSecretHash), []byte(clientSecret)); err != nil {

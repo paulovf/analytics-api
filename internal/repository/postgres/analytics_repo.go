@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	
+
 	"github.com/paulovf/analytics-api/internal/domain"
 )
 
@@ -24,7 +24,7 @@ func (r *AnalyticsRepo) GetDailyStatusStats(ctx context.Context, startDate, endD
 		WHERE day_bucket >= $1 AND day_bucket <= $2
 		ORDER BY day_bucket DESC, status ASC
 	`
-	
+
 	rows, err := r.db.Query(ctx, query, startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -39,6 +39,6 @@ func (r *AnalyticsRepo) GetDailyStatusStats(ctx context.Context, startDate, endD
 		}
 		stats = append(stats, s)
 	}
-	
+
 	return stats, rows.Err()
 }

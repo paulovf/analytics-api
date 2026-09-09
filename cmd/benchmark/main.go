@@ -39,7 +39,7 @@ func main() {
 	// TEST 1: Simple Aggregation (Total events by Status)
 	// =====================================================================
 	fmt.Println("\n[TEST 1] Event Count Grouped by Status")
-	
+
 	pgQuery1 := "SELECT status, COUNT(*) FROM payment_events GROUP BY status"
 	runPostgresBenchmark(ctx, pgPool, "TimescaleDB", pgQuery1)
 
@@ -50,7 +50,7 @@ func main() {
 	// TEST 2: Time Aggregation (Total events by Day and Status)
 	// =====================================================================
 	fmt.Println("\n[TEST 2] Time Aggregation (Grouped by Day and Status)")
-	
+
 	pgQuery2 := `
 		SELECT date_trunc('day', occurred_at) as day, status, COUNT(*) 
 		FROM payment_events 
@@ -80,7 +80,8 @@ func runPostgresBenchmark(ctx context.Context, pool *pgxpool.Pool, name, query s
 			log.Fatalf("Error in %s: %v", name, err)
 		}
 
-		for rows.Next() {}
+		for rows.Next() {
+		}
 		rows.Close()
 		totalDuration += time.Since(start)
 	}
@@ -98,7 +99,8 @@ func runClickHouseBenchmark(ctx context.Context, conn driver.Conn, name, query s
 		if err != nil {
 			log.Fatalf("Error in %s: %v", name, err)
 		}
-		for rows.Next() {}
+		for rows.Next() {
+		}
 		rows.Close()
 		totalDuration += time.Since(start)
 	}

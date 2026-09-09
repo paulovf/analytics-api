@@ -21,7 +21,7 @@ type PaymentNotificationWorker struct {
 }
 
 func (w *PaymentNotificationWorker) Work(ctx context.Context, job *river.Job[PaymentNotificationArgs]) error {
-	log.Printf("[RIVER WORKER] Proccessing async notification for payment ID: %s (Status: %s)", 
+	log.Printf("[RIVER WORKER] Proccessing async notification for payment ID: %s (Status: %s)",
 		job.Args.PaymentID, job.Args.Status)
 
 	return nil

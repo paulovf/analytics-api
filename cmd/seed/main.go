@@ -45,12 +45,12 @@ func main() {
 		}
 
 		clientRows = append(clientRows, []any{
-			id, 
-			gofakeit.Name(), 
-			gofakeit.SSN(), 
-			gofakeit.Address().Address, 
-			status, 
-			time.Now(), 
+			id,
+			gofakeit.Name(),
+			gofakeit.SSN(),
+			gofakeit.Address().Address,
+			status,
+			time.Now(),
 			time.Now(),
 		})
 	}

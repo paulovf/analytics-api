@@ -11,6 +11,7 @@ import (
 )
 
 type contextKey string
+
 const ClientIDKey contextKey = "client_id"
 
 type AuthHandler struct {

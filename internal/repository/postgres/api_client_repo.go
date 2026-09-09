@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	
+
 	"github.com/paulovf/analytics-api/internal/domain"
 )
 

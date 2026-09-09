@@ -100,7 +100,7 @@ func main() {
 
 		r.Group(func(r chi.Router) {
 			r.Use(httpHandler.JWTMiddleware(jwtSecretKey))
-		
+
 			r.Get("/clients", clientHandler.List)
 			r.Get("/clients/{id}", clientHandler.GetByID)
 

@@ -1,4 +1,3 @@
--- 1. Transforma a tabela comum em uma Hypertable
 SELECT create_hypertable('payment_events', 'occurred_at', migrate_data => true, if_not_exists => true);
 
 CREATE INDEX IF NOT EXISTS idx_payment_events_status_time 

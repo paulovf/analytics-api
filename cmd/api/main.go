@@ -6,6 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivermigrate"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
@@ -15,6 +19,7 @@ import (
 	httpHandler "github.com/paulovf/analytics-api/internal/handler/http"
 	repoPostgres "github.com/paulovf/analytics-api/internal/repository/postgres"
 	"github.com/paulovf/analytics-api/internal/usecase"
+	"github.com/paulovf/analytics-api/internal/worker"
 	"github.com/paulovf/analytics-api/pkg/postgres"
 )
 
@@ -29,6 +34,45 @@ func main() {
 		log.Fatalf("Fail on start database: %v", err)
 	}
 	defer pool.Close()
+
+	migrator, err := rivermigrate.New(riverpgxv5.New(pool), nil)
+	if err != nil {
+		log.Fatalf("Fail on create River migrator: %v", err)
+	}
+
+	_, err = migrator.Migrate(ctx, rivermigrate.DirectionUp, &rivermigrate.MigrateOpts{})
+	if err != nil {
+		log.Fatalf("Fail on execute River migrations: %v", err)
+	}
+	log.Println("Tables of River migrated/verified successfully!")
+
+	workers := river.NewWorkers()
+	river.AddWorker(workers, &worker.PaymentNotificationWorker{})
+
+	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 10},
+		},
+		Workers: workers,
+	})
+	if err != nil {
+		log.Fatalf("Fail on start River Queue: %v", err)
+	}
+
+	if err := riverClient.Start(ctx); err != nil {
+		log.Fatalf("Fail on start River processor: %v", err)
+	}
+	defer riverClient.Stop(ctx)
+
+	_, err = riverClient.Insert(ctx, worker.PaymentNotificationArgs{
+		PaymentID: "00000000-0000-0000-0000-000000000001",
+		Status:    "completed",
+	}, nil)
+	if err != nil {
+		log.Printf("Error while enqueueing test job: %v", err)
+	}
+
+	log.Println("HTTP Server and async Workers (River) are running...")
 
 	clientRepo := repoPostgres.NewClientRepo(pool)
 	paymentRepo := repoPostgres.NewPaymentRepo(pool)
